@@ -1,0 +1,220 @@
+#
+# SPDX-FileCopyrightText: The LineageOS Project
+# SPDX-License-Identifier: Apache-2.0
+#
+
+COMMON_PATH := device/motorola/sm6375-common
+
+# Architecture
+TARGET_ARCH := arm64
+TARGET_ARCH_VARIANT := armv8-2a-dotprod
+TARGET_CPU_ABI := arm64-v8a
+TARGET_CPU_ABI2 :=
+TARGET_CPU_VARIANT := generic
+TARGET_CPU_VARIANT_RUNTIME := kryo385
+
+# Bootloader
+TARGET_NO_BOOTLOADER := true
+
+# Kernel
+BOARD_BOOT_HEADER_VERSION := 4
+BOARD_KERNEL_BASE := 0x00000000
+BOARD_KERNEL_CMDLINE := \
+    video=vfb:640x400,bpp=32,memsize=3072000 \
+    msm_rtb.filter=0x237 \
+    iptable_raw.raw_before_defrag=1 \
+    ip6table_raw.raw_before_defrag=1 \
+    firmware_class.path=/vendor/firmware_mnt/image \
+    pstore.compress=none \
+    loglevel=4 \
+    log_buf_len=256K \
+    mem.enable_mglru=1 \
+    nosoftlockup
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+BOARD_BOOTCONFIG := \
+    androidboot.hardware=qcom \
+    androidboot.memcg=1 \
+    androidboot.usbcontroller=4e00000.dwc3 \
+    androidboot.load_modules_parallel=true
+
+BOARD_KERNEL_IMAGE_NAME := Image
+BOARD_KERNEL_PAGESIZE := 4096
+BOARD_KERNEL_SEPARATED_DTBO := true
+BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOT_HEADER_VERSION)
+BOARD_RAMDISK_USE_LZ4 := true
+BOARD_USES_GENERIC_KERNEL_IMAGE := true
+TARGET_KERNEL_SOURCE := kernel/motorola/sm6375
+TARGET_KERNEL_CONFIG := \
+    gki_defconfig \
+    vendor/blair_GKI.config \
+    vendor/ext_config/moto-blair.config
+
+BOARD_USES_QCOM_MERGE_DTBS_SCRIPT := true
+TARGET_NEEDS_DTBOIMAGE := true
+
+# Kernel modules
+TARGET_KERNEL_EXT_MODULE_ROOT := kernel/motorola/sm6375-modules
+TARGET_KERNEL_EXT_MODULES := \
+    qcom/opensource/mmrm-driver \
+    qcom/opensource/mm-drivers/hw_fence \
+    qcom/opensource/mm-drivers/msm_ext_display \
+    qcom/opensource/mm-drivers/sync_fence \
+    qcom/opensource/securemsm-kernel \
+    qcom/opensource/audio-kernel \
+    qcom/opensource/camera-kernel \
+    qcom/opensource/datarmnet-ext/mem \
+    qcom/opensource/dataipa/drivers/platform/msm \
+    qcom/opensource/datarmnet/core \
+    qcom/opensource/datarmnet-ext/aps \
+    qcom/opensource/datarmnet-ext/offload \
+    qcom/opensource/datarmnet-ext/shs \
+    qcom/opensource/datarmnet-ext/perf \
+    qcom/opensource/datarmnet-ext/perf_tether \
+    qcom/opensource/datarmnet-ext/sch \
+    qcom/opensource/datarmnet-ext/wlan \
+    qcom/opensource/display-drivers/msm \
+    qcom/opensource/dsp-kernel \
+    qcom/opensource/video-driver \
+    qcom/opensource/graphics-kernel \
+    qcom/opensource/wlan/platform \
+    qcom/opensource/wlan/qcacld-3.0/.kiwi_v2 \
+    qcom/opensource/wlan/qcacld-3.0/.qca6750 \
+    qcom/opensource/bt-kernel \
+    nxp/opensource/driver
+
+BOOT_KERNEL_MODULES := $(strip $(shell cat $(COMMON_PATH)/modules.load.recovery))
+BOARD_VENDOR_KERNEL_MODULES_LOAD := $(strip $(shell cat $(COMMON_PATH)/modules.load.vendor_dlkm))
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(strip $(shell cat $(COMMON_PATH)/modules.load.first_stage))
+BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD  := $(strip $(shell cat $(COMMON_PATH)/modules.load.recovery))
+
+# Platform
+BOARD_USES_QCOM_HARDWARE := true
+TARGET_BOARD_PLATFORM := blair
+
+BOARD_ROOT_EXTRA_SYMLINKS := \
+    /vendor/fsg:/fsg
+
+# A/B
+AB_OTA_UPDATER := true
+
+AB_OTA_PARTITIONS += \
+    boot \
+    dtbo \
+    product \
+    system \
+    system_ext \
+    vbmeta \
+    vbmeta_system \
+    vendor \
+    vendor_boot \
+    vendor_dlkm
+
+# Audio
+AUDIO_FEATURE_ENABLED_AHAL_EXT := false
+AUDIO_FEATURE_ENABLED_DLKM := true
+AUDIO_FEATURE_ENABLED_DS2_DOLBY_DAP := false
+AUDIO_FEATURE_ENABLED_DTS_EAGLE := false
+AUDIO_FEATURE_ENABLED_DYNAMIC_LOG := false
+AUDIO_FEATURE_ENABLED_EXTENDED_COMPRESS_FORMAT := true
+AUDIO_FEATURE_ENABLED_GEF_SUPPORT := true
+AUDIO_FEATURE_ENABLED_GKI := true
+AUDIO_FEATURE_ENABLED_HW_ACCELERATED_EFFECTS := false
+AUDIO_FEATURE_ENABLED_INSTANCE_ID := true
+AUDIO_FEATURE_ENABLED_PROXY_DEVICE := true
+AUDIO_FEATURE_ENABLED_SSR := false
+AUDIO_FEATURE_ENABLED_SVA_MULTI_STAGE := true
+BOARD_SUPPORTS_OPENSOURCE_STHAL := true
+BOARD_SUPPORTS_SOUND_TRIGGER := true
+BOARD_USES_ALSA_AUDIO := true
+
+# Filesystem
+TARGET_FS_CONFIG_GEN := $(COMMON_PATH)/config.fs
+
+# GPS
+BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := default
+
+# HIDL
+DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
+    hardware/motorola/vintf/device_framework_matrix.xml \
+    hardware/qcom-caf/common/vendor_framework_compatibility_matrix.xml \
+    $(COMMON_PATH)/framework_compatibility_matrix.xml
+DEVICE_MATRIX_FILE := hardware/qcom-caf/common/compatibility_matrix.xml
+DEVICE_MANIFEST_FILE += $(COMMON_PATH)/manifest.xml
+
+# Metadata
+BOARD_USES_METADATA_PARTITION := true
+
+# Partitions
+SSI_PARTITIONS := product system system_ext
+TREBLE_PARTITIONS := vendor vendor_dlkm
+ALL_PARTITIONS := $(SSI_PARTITIONS) $(TREBLE_PARTITIONS)
+
+$(foreach p, $(call to-upper, $(SSI_PARTITIONS)), \
+    $(eval BOARD_$(p)IMAGE_FILE_SYSTEM_TYPE := ext4) \
+    $(eval TARGET_COPY_OUT_$(p) := $(call to-lower, $(p))))
+
+$(foreach p, $(call to-upper, $(TREBLE_PARTITIONS)), \
+    $(eval BOARD_$(p)IMAGE_FILE_SYSTEM_TYPE := erofs) \
+    $(eval TARGET_COPY_OUT_$(p) := $(call to-lower, $(p))))
+
+-include vendor/lineage/config/BoardConfigReservedSize.mk
+BOARD_BOOTIMAGE_PARTITION_SIZE := 100663296
+BOARD_DTBOIMG_PARTITION_SIZE := 25165824
+BOARD_VENDOR_BOOTIMAGE_PARTITION_SIZE := 100663296
+BOARD_BUILD_VENDOR_RAMDISK_IMAGE := true
+BOARD_MOT_DP_GROUP_PARTITION_LIST := $(ALL_PARTITIONS)
+BOARD_SUPER_PARTITION_GROUPS := mot_dp_group
+BOARD_FLASH_BLOCK_SIZE := 262144 # (BOARD_KERNEL_PAGESIZE * 64)
+
+# Properties
+TARGET_ODM_PROP += $(COMMON_PATH)/odm.prop
+TARGET_PRODUCT_PROP += $(COMMON_PATH)/product.prop
+TARGET_SYSTEM_EXT_PROP += $(COMMON_PATH)/system_ext.prop
+TARGET_VENDOR_PROP += $(COMMON_PATH)/vendor.prop
+
+# Recovery
+BOARD_INCLUDE_RECOVERY_DTBO := true
+BOARD_INCLUDE_DTB_IN_BOOTIMG := true
+BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT := true
+BOARD_MOVE_GSI_AVB_KEYS_TO_VENDOR_BOOT := true
+BOARD_MOVE_RECOVERY_RESOURCES_TO_VENDOR_BOOT := true
+TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
+TARGET_USERIMAGES_USE_EXT4 := true
+TARGET_USERIMAGES_USE_F2FS := true
+TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/init/fstab.qcom
+TARGET_RECOVERY_WIPE := $(COMMON_PATH)/recovery/recovery.wipe
+
+# RIL
+ENABLE_VENDOR_RIL_SERVICE := true
+
+# SELinux
+# include device/qcom/sepolicy_vndr/SEPolicy.mk
+# include device/lineage/sepolicy/libperfmgr/sepolicy.mk
+# include hardware/motorola/sepolicy/qti/SEPolicy.mk
+# BOARD_VENDOR_SEPOLICY_DIRS += $(COMMON_PATH)/sepolicy/vendor
+
+# Verified Boot
+BOARD_AVB_ENABLE := true
+BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 3
+BOARD_AVB_VBMETA_SYSTEM := system system_ext product
+BOARD_AVB_VBMETA_SYSTEM_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem
+BOARD_AVB_VBMETA_SYSTEM_ALGORITHM := SHA256_RSA2048
+BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX_LOCATION := 2
+
+# WiFi
+BOARD_WLAN_DEVICE := qcwcn
+BOARD_HOSTAPD_DRIVER := NL80211
+BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_$(BOARD_WLAN_DEVICE)
+BOARD_WPA_SUPPLICANT_DRIVER := NL80211
+BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_$(BOARD_WLAN_DEVICE)
+BOARD_WPA_SUPPLICANT_PRIVATE_LIB_EVENT := "ON"
+WIFI_DRIVER_DEFAULT := qca_cld3
+WIFI_DRIVER_STATE_CTRL_PARAM := "/dev/wlan"
+WIFI_DRIVER_STATE_OFF := "OFF"
+WIFI_DRIVER_STATE_ON := "ON"
+WIFI_HIDL_FEATURE_DUAL_INTERFACE := true
+WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
+WPA_SUPPLICANT_VERSION := VER_0_8_X
+
+# inherit from the proprietary version
+include vendor/motorola/sm6375-common/BoardConfigVendor.mk
